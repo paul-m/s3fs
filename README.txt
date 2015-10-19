@@ -21,18 +21,14 @@ viable under such a configuration.
 1) Install Libraries version 2.x from http://drupal.org/project/libraries.
 
 2) Install the AWS SDK for PHP.
-2a) If you have drush, you can install the SDK with this command:
-drush make --no-core sites/all/modules/s3fs/s3fs.make
-2b) If you don't have drush, go to to http://aws.amazon.com/sdk-for-php
-and click the orange "AWS SDK for PHP" button. On the page you're sent to,
-click the "aws.zip" link. Extract that zip file into your Drupal site's
-sites/all/libraries/awssdk2 folder such that the path to aws-autoloader.php is
-sites/all/libraries/awssdk2/aws-autoloader.php
-
-In the unlikely circumstance that the version of the SDK you downloaded causes
-errors with S3 File System, you can download this version instead, which is
-known to work:
-https://github.com/aws/aws-sdk-php/releases/download/2.7.25/aws.zip
+  a) If you have drush, you can install the SDK with this command (executed
+    from the root folder of your Drupal codebase):
+    drush make --no-core sites/all/modules/s3fs/s3fs.make
+  b) If you don't have drush, download the SDK from here:
+    https://github.com/aws/aws-sdk-php/releases/download/2.7.25/aws.zip
+    Extract that zip file into your Drupal codebase's
+    sites/all/libraries/awssdk2 folder such that the path to aws-autoloader.php
+    is: sites/all/libraries/awssdk2/aws-autoloader.php
 
 IN CASE OF TROUBLE DETECTING THE AWS SDK LIBRARY:
 Ensure that the awssdk2 folder itself, and all the files within it, can be read
