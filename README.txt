@@ -10,7 +10,7 @@ viable under such a configuration.
 == Dependencies and Other Requirements ==
 =========================================
 - Libraries API 2.x - https://drupal.org/project/libraries
-- AWS SDK for PHP - http://aws.amazon.com/sdk-for-php
+- AWS SDK for PHP 2.x - https://github.com/aws/aws-sdk-php/releases
 - PHP 5.3.3+ is required. The AWS SDK will not work on earlier versions.
 - Your PHP must be configured with "allow_url_fopen = On" in your php.ini file.
   Otherwise, PHP will be unable to open files that are in your S3 bucket.
