@@ -339,7 +339,7 @@ class S3fsStreamWrapper implements DrupalStreamWrapperInterface {
     // Deal with public:// files.
     if (file_uri_scheme($this->uri) == 'public') {
       // Rewrite all css/js file paths unless the user has told us not to.
-      if (!$this->config['no_rewrite_cssjs']) {
+      if (empty($this->config['no_rewrite_cssjs'])) {
         if (substr($s3_key, -4) == '.css') {
           // Send requests for public CSS files to /s3fs-css/path/to/file.css.
           // Users must set that path up in the webserver config as a proxy into
