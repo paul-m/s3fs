@@ -45,14 +45,14 @@ your site's settings.php file (sites/default/settings.php), like so:
 $conf['awssdk2_access_key'] = 'YOUR ACCESS KEY';
 $conf['awssdk2_secret_key'] = 'YOUR SECRET KEY';
 
-Configure your setttings for S3 File System (including your S3 bucket name) at
+Configure your settings for S3 File System (including your S3 bucket name) at
 /admin/config/media/s3fs/settings. You can input your AWS credentials on this
-page as well, but using the $conf array is reccomended.
+page as well, but using the $conf array is recommended.
 
 You can also configure the rest of your S3 preferences in the $conf array. See
 the "Configuring S3FS in settings.php" section below for more info.
 
-==================== ESSENTAL STEP! DO NOT SKIP THIS! =========================
+===================== ESSENTIAL STEP! DO NOT SKIP THIS! ======================
 With the settings saved, go to /admin/config/media/s3fs/actions to refresh the
 file metadata cache. This will copy the filenames and attributes for every
 existing file in your S3 bucket into Drupal's database. This can take a
@@ -228,7 +228,7 @@ Some curl libraries, such as the one bundled with MAMP, do not come
 with authoritative certificate files. See the following page for details:
 http://dev.soup.io/post/56438473/If-youre-using-MAMP-and-doing-something
 
-Because of a bizzare limitation regarding MySQL's maximum index length for
+Because of a bizarre limitation regarding MySQL's maximum index length for
 InnoDB tables, the maximum uri length that S3FS supports is 250 characters.
 That includes the full path to the file in your bucket, as the full folder
 path is part of the uri.
