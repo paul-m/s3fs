@@ -98,6 +98,22 @@ the S3FS Actions page (admin/config/media/s3fs/actions), though the copy
 operation may fail if you have a lot of files, or very large files. The drush
 command will cleanly handle any combination of files.
 
+If you're using NGINX rather than Apache, you probably have a config block
+like this:
+
+location ~ (^/sites/.*/files/imagecache/|^/sites/default/themes/.*/includes/fonts/|^/sites/.*/files/styles/) {
+  expires max;
+  try_files $uri @rewrite;
+}
+
+To make s3fs's custom image derivative mechanism work, you'll need to modify
+that regex it with an additional path, like so:
+
+location ~ (^/s3/files/styles/|^/sites/.*/files/imagecache/|^/sites/default/themes/.*/includes/fonts/|^/sites/.*/files/styles/) {
+  expires max;
+  try_files $uri @rewrite;
+}
+
 =================================
 == Aggregated CSS and JS in S3 ==
 =================================
