@@ -1,4 +1,4 @@
-S3 File System (s3fs) provides an additional file system to your drupal site,
+S3 File System (s3fs) provides an additional file system to your Drupal site,
 alongside the public and private file systems, which stores files in Amazon's
 Simple Storage Service (S3) (or any S3-compatible storage service). You can set
 your site to use S3 File System as the default, or use it only for individual
@@ -98,7 +98,7 @@ the S3FS Actions page (admin/config/media/s3fs/actions), though the copy
 operation may fail if you have a lot of files, or very large files. The drush
 command will cleanly handle any combination of files.
 
-If you're using NGINX rather than Apache, you probably have a config block
+If you're using nginx rather than Apache, you probably have a config block
 like this:
 
 location ~ (^/sites/.*/files/imagecache/|^/sites/default/themes/.*/includes/fonts/|^/sites/.*/files/styles/) {
@@ -117,13 +117,21 @@ location ~ (^/s3/files/styles/|^/sites/.*/files/imagecache/|^/sites/default/them
 =================================
 == Aggregated CSS and JS in S3 ==
 =================================
-Because of the way browsers interpret relative URLs used in CSS files, and how
-they restrict requests made from external javascript files, if you want your
-site's aggregated CSS and JS to be placed in S3, you'll need to set up your
-webserver as a proxy for those files. S3 File System will present all public://
-css files with the url prefix /s3fs-css/, and all public:// javascript files
-with /s3fs-js/. So you need to set up your webserver to proxy all URLs with
-those prefixes into your S3 bucket.
+If you want your site's aggregated CSS and JS files to be stored on S3, rather
+than the default of storing them on the webserver's local filesystem, you'll
+need to do two things:
+1) Enable the "Use S3 for public:// files" option in the s3fs coniguration,
+   because Drupal always* puts aggregated CSS/JS into the public:// filesystem.
+2) Because of the way browsers interpret relative URLs used in CSS files, and
+   how they restrict requests made from external javascript files, you'll need
+   to set up your webserver as a proxy for those files.
+
+* When you've got a module like "Advanced CSS/JS Aggregation" installed, things
+get hairy. For now, that module is not compatible with s3fs public:// takeover.
+
+S3FS will present all css files in the taken over public:// filesystem with the
+url prefix /s3fs-css/, and all javascript files with /s3fs-js/. So you need to
+set up your webserver to proxy those URLs into your S3 bucket.
 
 For Apache, add this code to the right location* in your server's config:
 
@@ -147,7 +155,7 @@ ProxyPassReverse /s3fs-css/ https://YOUR-BUCKET.s3.amazonaws.com/YOUR-ROOT-FOLDE
 * The "right location" is implementation-dependent. Normally, placing these
 lines at the bottom of your httpd.conf file should be sufficient. However, if
 your site is configured to use SSL, you'll need to put these lines in the
-VirtuaHost settings for both your normal and SSL sites.
+VirtualHost settings for both your normal and SSL sites.
 
 
 For nginx, add this to your server config:
@@ -256,9 +264,9 @@ thrown. If your server uses eAccelerator, it is highly recommended that you
 replace it with a different opcode cache plugin, as its development was
 abandoned several years ago.
 
-======================
-== Acknowledgements ==
-======================
+=====================
+== Acknowledgments ==
+=====================
 Special recognition goes to justafish, author of the AmazonS3 module:
 http://drupal.org/project/amazons3
 S3 File System started as a fork of her great module, but has evolved
