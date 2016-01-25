@@ -109,8 +109,8 @@ class S3fsStreamWrapper implements DrupalStreamWrapperInterface {
   public function __construct() {
     // Since S3fsStreamWrapper is always constructed with the same inputs (the
     // file URI is not part of construction), we store the constructed settings
-    // statically. This is important for performance because Drupal
-    // re-constructs stream wrappers very often.
+    // statically. This is important for performance because the way Drupal's
+    // APIs are used causes stream wrappers to be frequently re-constructed.
     $settings = &drupal_static('S3fsStreamWrapper_constructed_settings');
     if ($settings !== NULL) {
       $this->config = $settings['config'];
@@ -122,6 +122,8 @@ class S3fsStreamWrapper implements DrupalStreamWrapperInterface {
       $this->constructed = TRUE;
       return;
     }
+
+    // Begin uncached construction.
     $this->config = _s3fs_get_config();
 
     if (empty($this->config['bucket'])) {
