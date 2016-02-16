@@ -13,18 +13,18 @@ function s3fs_settings() {
   // NOTE: I'd like to be able to pull this information directly from the SDK, but
   // I couldn't find a way to get the human-readable region names.
   $region_map = array(
-    '' => 'Default',
-    'us-east-1' => 'US Standard (us-east-1)',
-    'us-west-1' => 'US West - Northern California  (us-west-1)',
-    'us-west-2' => 'US West - Oregon (us-west-2)',
-    'us-gov-west-1' => 'USA GovCloud Standard (us-gov-west-1)',
-    'eu-west-1' => 'EU - Ireland  (eu-west-1)',
-    'eu-central-1' => 'EU - Frankfurt (eu-central-1)',
-    'ap-southeast-1' => 'Asia Pacific - Singapore (ap-southeast-1)',
-    'ap-southeast-2' => 'Asia Pacific - Sydney (ap-southeast-2)',
-    'ap-northeast-1' => 'Asia Pacific - Tokyo (ap-northeast-1)',
-    'sa-east-1' => 'South America - Sao Paulo (sa-east-1)',
-    'cn-north-1' => 'China - Beijing (cn-north-1)',
+    '' => t('Default'),
+    'us-east-1' => t('US Standard (us-east-1)'),
+    'us-west-1' => t('US West - Northern California  (us-west-1)'),
+    'us-west-2' => t('US West - Oregon (us-west-2)'),
+    'us-gov-west-1' => t('USA GovCloud Standard (us-gov-west-1)'),
+    'eu-west-1' => t('EU - Ireland  (eu-west-1)'),
+    'eu-central-1' => t('EU - Frankfurt (eu-central-1)'),
+    'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
+    'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
+    'ap-northeast-1' => t('Asia Pacific - Tokyo (ap-northeast-1)'),
+    'sa-east-1' => t('South America - Sao Paulo (sa-east-1)'),
+    'cn-north-1' => t('China - Beijing (cn-north-1)'),
   );
 
   /////////////////////////////////////
