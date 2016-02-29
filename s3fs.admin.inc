@@ -120,9 +120,7 @@ function s3fs_settings() {
     '#type'          => 'checkbox',
     '#title'         => t('Use a CNAME'),
     '#default_value' => _s3fs_get_setting('use_cname'),
-    '#description'   => t('Serve files from a custom domain by using an appropriately named bucket,
-      e.g. "mybucket.mydomain.com".'
-    ),
+    '#description'   => t('Serve files from a custom domain, instead of "BUCKET_NAME.s3.REGION.amazonaws.com".'),
   );
 
   $form['advanced']['s3fs_cname_settings_fieldset'] = array(
@@ -135,9 +133,11 @@ function s3fs_settings() {
     ),
     's3fs_domain' => array(
       '#type'          => 'textfield',
-      '#title'         => t('CDN Domain Name'),
+      '#title'         => t('Domain Name'),
       '#default_value' => _s3fs_get_setting('domain'),
-      '#description'   => t('If serving files from CloudFront, the bucket name can differ from the domain name.'),
+      '#description'   => t("The domain name from which you want your files to be served. " .
+        "You will need to configure a DNS CNAME that maps from this domain to your bucket's URL."
+      ),
     ),
   );
 
