@@ -270,6 +270,35 @@ function s3fs_settings() {
     ),
   );
 
+
+  $form['advanced']['additional_folders'] = array(
+    '#type'        => 'fieldset',
+    '#title'       => t('Additional Folder Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed'   => TRUE,
+    '#description' => t(
+      'Like the root folder, changing these settings <b>will not</b> move any files. If you\'ve already uploaded files
+      to S3 through S3 File System, you will need to manually move them into the corresponding folders.'),
+  );
+
+  $form['advanced']['additional_folders']['s3fs_public_folder'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Public Folder'),
+    '#default_value' => _s3fs_get_setting('public_folder', 's3fs-public'),
+    '#description'   => t(
+      'The name of the folder in your bucket (or within the root folder) where public:// files will be stored.'
+    ),
+  );
+
+  $form['advanced']['additional_folders']['s3fs_private_folder'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Private Folder'),
+    '#default_value' => _s3fs_get_setting('private_folder', 's3fs-private'),
+    '#description'   => t(
+      'The name of the folder in your bucket (or within the root folder) where private:// files will be stored.'
+    ),
+  );
+
   /////////////////////////////////////
   // FILE-SPECIFIC CONFIGURATION
   /////////////////////////////////////

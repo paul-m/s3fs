@@ -180,6 +180,9 @@ folder before the /s3fs-public/ part of the target URLs. Like so:
 ProxyPass /s3fs-css/ https://YOUR-BUCKET.s3.amazonaws.com/YOUR-ROOT-FOLDER/s3fs-public/
 ProxyPassReverse /s3fs-css/ https://YOUR-BUCKET.s3.amazonaws.com/YOUR-ROOT-FOLDER/s3fs-public/
 
+If you've set up a custom name for the public folder, you'll need to change the
+'s3fs-public' part of the URLs above to match your custom folder name.
+
 * The "right location" is implementation-dependent. Normally, placing these
 lines at the bottom of your httpd.conf file should be sufficient. However, if
 your site is configured to use SSL, you'll need to put these lines in the
@@ -233,6 +236,8 @@ $conf['s3fs_use_s3_for_public'] = TRUE or FALSE;
 $conf['s3fs_no_rewrite_cssjs'] = TRUE or FALSE;
 $conf['s3fs_use_s3_for_private'] = TRUE or FALSE;
 $conf['s3fs_root_folder'] = 'drupal-root';
+$conf['s3fs_public_folder'] = 's3fs-public';
+$conf['s3fs_private_folder'] = 's3fs-private';
 $conf['s3fs_presigned_urls'] = "300|presigned-files/*\n60|other-presigned/*";
 $conf['s3fs_saveas'] = "videos/*\nfull-size-images/*";
 $conf['s3fs_torrents'] = "yarrr/*";
