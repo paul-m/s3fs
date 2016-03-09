@@ -114,6 +114,34 @@ location ~ (^/s3/files/styles/|^/sites/.*/files/imagecache/|^/sites/default/them
   try_files $uri @rewrite;
 }
 
+========================
+== AWS Permissions ==
+========================
+For s3fs to be able to function, the AWS user identified by the configured
+credentials should have the following User Policy set:
+
+{
+    "Effect": "Allow",
+    "Action": [
+        "s3:ListAllMyBuckets"
+    ],
+    "Resource": "arn:aws:s3:::*"
+},
+{
+    "Effect": "Allow",
+    "Action": [
+        "s3:*"
+    ],
+    "Resource": [
+        "arn:aws:s3:::<bucket_name>",
+        "arn:aws:s3:::<bucket_name>/*",
+    ]
+}
+
+This is not the precise list of permissions necessary, but it's broad enough
+to allow s3fs to function while being strict enough to restrict access to other
+services.
+
 =================================
 == Aggregated CSS and JS in S3 ==
 =================================
