@@ -169,6 +169,18 @@ function s3fs_settings() {
     ),
   );
 
+  $form['advanced']['s3fs_no_redirect_derivatives'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t("Don't redirect to derivatives"),
+    '#default_value' => _s3fs_get_setting('no_redirect_derivatives'),
+    '#description'   => t(
+      'Normally, when a new image derivative is created, S3FS will redirect the client to its URL in S3.
+      This may be undersirable for sites which use a CDN, so this checkbox was added to make S3FS upload
+      the derivative to the client, instead. Doing so is less performant, but it allows the CDN to cache
+      the file itself, instead of caching the redirect.'
+    ),
+  );
+
   $form['advanced']['s3fs_cache_control_header'] = array(
     '#type'          => 'textfield',
     '#title'         => t('S3 Object Cache-Control Header'),
