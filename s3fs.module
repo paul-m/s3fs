@@ -377,7 +377,7 @@ function _s3fs_refresh_cache($config) {
     ->fields('s', array('uri'))
     ->condition('dir', 1, '=');
   foreach ($existing_folders->execute()->fetchCol(0) as $folder_uri) {
-    $folders[$folder_uri] = TRUE;
+    $folders[rtrim($folder_uri, '/')] = TRUE;
   }
 
   // Create the temp table, into which all the refreshed data will be written.
@@ -509,7 +509,7 @@ function _s3fs_write_metadata(&$file_metadata_list, &$folders) {
       $root = file_uri_scheme($uri) . '://';
       // Loop through each ancestor folder until we get to the root uri.
       while ($uri != $root) {
-        $folders[$uri] = TRUE;
+        $folders[rtrim($uri, '/')] = TRUE;
         $uri = drupal_dirname($uri);
       }
     }
