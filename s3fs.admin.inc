@@ -23,6 +23,7 @@ function s3fs_settings() {
     'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
     'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
     'ap-northeast-1' => t('Asia Pacific - Tokyo (ap-northeast-1)'),
+    'ap-northeast-2' => t('Asia Pacific - Seoul (ap-northeast-2)'),
     'sa-east-1' => t('South America - Sao Paulo (sa-east-1)'),
     'cn-north-1' => t('China - Beijing (cn-north-1)'),
   );
