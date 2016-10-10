@@ -25,7 +25,7 @@
  *     - 'presigned_url': (boolean) Triggers use of an authenticated URL.
  *     - 'timeout': (int) Time in seconds before a pre-signed URL times out.
  *     - 'api_args': array of additional arguments to the getObject() function:
- *       http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.S3.S3Client.html#_getObject
+ *       https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#getobject
  *     - 'custom_GET_args': (array) Implementing this hook allows you to add
  *       your own set of custom GET arguments to the S3 URLs of your files.
  *       If your custom args' keys start with "x-", S3 will ignore them, but
@@ -57,7 +57,7 @@ function hook_s3fs_url_settings_alter(&$url_settings, $s3_file_path) {
  *
  * @param array $upload_params
  *   Associative array of upload settings
- * @see http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.S3.S3Client.html#_putObject
+ * @see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
 */
 function hook_s3fs_upload_params_alter(&$upload_params) {
   if (strpos($upload_params['Key'], 'private/') !== FALSE){

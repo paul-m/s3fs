@@ -5,6 +5,8 @@
  * Administration form setup for S3 File System.
  */
 
+use Aws\Api;
+
 /**
  * Builds the Settings form.
  */
@@ -36,42 +38,40 @@ function s3fs_settings() {
     '#title'       => t('Amazon Web Services Credentials'),
     '#description' => t(
       "To configure your Amazon Web Services credentials, enter the values in the appropriate fields below.
-      You may instead set \$conf['awssdk2_access_key'] and \$conf['awssdk2_secret_key'] in settings.php."
+      You may instead set \$conf['awssdk_access_key'] and \$conf['awssdk_secret_key'] in settings.php."
     ),
     '#collapsible' => TRUE,
     // Simplify the form by collapsing this fieldset if it's already been configured.
-    '#collapsed'   => _s3fs_get_setting('awssdk2_access_key') ||
-                      _s3fs_get_setting('use_instance_profile'),
+    '#collapsed'   => _s3fs_get_setting('awssdk_access_key') || _s3fs_get_setting('use_instance_profile'),
   );
 
-  $form['aws_credentials']['s3fs_awssdk2_access_key'] = array(
+  $form['aws_credentials']['s3fs_awssdk_access_key'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Amazon Web Services Access Key'),
-    '#default_value' => _s3fs_get_setting('awssdk2_access_key'),
+    '#default_value' => _s3fs_get_setting('awssdk_access_key'),
   );
 
-  $form['aws_credentials']['s3fs_awssdk2_secret_key'] = array(
+  $form['aws_credentials']['s3fs_awssdk_secret_key'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Amazon Web Services Secret Key'),
-    '#default_value' => _s3fs_get_setting('awssdk2_secret_key'),
+    '#default_value' => _s3fs_get_setting('awssdk_secret_key'),
   );
 
-  $form['aws_credentials']['s3fs_awssdk2_use_instance_profile'] = array(
+  $form['aws_credentials']['s3fs_use_instance_profile'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Use EC2 Instance Profile Credentials'),
-    // TODO: Remove the 'use_instance_profile' and 's3fs_use_instance_profile' bits in 3.0.
-    '#default_value' => _s3fs_get_setting('awssdk2_use_instance_profile') || _s3fs_get_setting('use_instance_profile'),
+    '#default_value' => _s3fs_get_setting('use_instance_profile'),
     '#description'   => t(
       'If your Drupal site is running on an Amazon EC2 server, you may use the Instance Profile Credentials
-      from that server rather than setting your AWS credentials directly.'
-    ),
+     from that server rather than setting your AWS credentials directly.'
+     ),
   );
 
-  $form['aws_credentials']['s3fs_awssdk2_default_cache_config'] = array(
+  $form['aws_credentials']['s3fs_credentials_file'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('Default Cache Location'),
-    '#default_value' => _s3fs_get_setting('awssdk2_default_cache_config'),
-    '#description'   => t('The default cache location for your EC2 Instance Profile Credentials.'),
+    '#title'         => t('Custom Credentials File Location'),
+    '#default_value' => _s3fs_get_setting('credentials_file'),
+    '#description'   => t('The custom profile or ini file location. This will use the ini provider instead.'),
     '#states'        => array(
       'visible' => array(
         ':input[id=edit-s3fs-use-instance-profile]' => array('checked' => TRUE),
