@@ -16,7 +16,8 @@ function s3fs_settings() {
   // I couldn't find a way to get the human-readable region names.
   $region_map = array(
     '' => t('Default'),
-    'us-east-1' => t('US Standard (us-east-1)'),
+    'us-east-1' => t('US East - Northern Virginia (us-east-1)'),
+    'us-east-2' => t('US East - Ohio (us-east-2)'),
     'us-west-1' => t('US West - Northern California  (us-west-1)'),
     'us-west-2' => t('US West - Oregon (us-west-2)'),
     'us-gov-west-1' => t('USA GovCloud Standard (us-gov-west-1)'),
