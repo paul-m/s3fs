@@ -303,7 +303,7 @@ function s3fs_update_7202() {
   // As of the introduction of this update hook, s3fs_schema() now defines
   // the `uri` column with "binary = TRUE".
   $schema = s3fs_schema();
- db_change_field('s3fs_file', 'uri', 'uri', $schema['s3fs_file']['fields']['uri']);
+  db_change_field('s3fs_file', 'uri', 'uri', $schema['s3fs_file']['fields']['uri']);
 }
 
 

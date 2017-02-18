@@ -297,7 +297,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
           // their S3 bucket's s3fs_public_folder.
           return "{$GLOBALS['base_url']}/s3fs-css/" . drupal_encode_path($s3_key);
         }
-        else if (substr($s3_key, -3) == '.js') {
+        elseif (substr($s3_key, -3) == '.js') {
           // Send requests for public JS files to /s3fs-js/path/to/file.js.
           // Like with CSS, the user must set up that path as a proxy.
           return "{$GLOBALS['base_url']}/s3fs-js/" . drupal_encode_path($s3_key);
@@ -810,7 +810,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     if (strpos($uri, 'public:///') === 0) {
       $uri = preg_replace('^public://[/]+^', 'public://', $uri);
     }
-    else if (strpos($uri, 'private:///') === 0) {
+    elseif (strpos($uri, 'private:///') === 0) {
       $uri = preg_replace('^private://[/]+^', 'private://', $uri);
     }
 
@@ -864,7 +864,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     if (strpos($metadata['uri'], 'public:///') === 0) {
       $metadata['uri'] = preg_replace('^public://[/]+^', 'public://', $metadata['uri']);
     }
-    else if (strpos($metadata['uri'], 'private:///') === 0) {
+    elseif (strpos($metadata['uri'], 'private:///') === 0) {
       $metadata['uri'] = preg_replace('^private://[/]+^', 'private://', $metadata['uri']);
     }
 
@@ -964,7 +964,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
         $parts[1] = "$public_folder/{$parts[1]}";
       }
       // private:// file are all placed in the s3fs_private_folder.
-      else if (file_uri_scheme($uri) == 'private') {
+      elseif (file_uri_scheme($uri) == 'private') {
         $parts[1] = "$private_folder/{$parts[1]}";
       }
 
