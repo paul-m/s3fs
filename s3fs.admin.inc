@@ -21,6 +21,7 @@ function s3fs_settings() {
     'us-west-2' => t('US West - Oregon (us-west-2)'),
     'us-gov-west-1' => t('USA GovCloud Standard (us-gov-west-1)'),
     'eu-west-1' => t('EU - Ireland  (eu-west-1)'),
+    'eu-west-2' => t('EU - London (eu-west-2)'),
     'eu-central-1' => t('EU - Frankfurt (eu-central-1)'),
     'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
     'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
