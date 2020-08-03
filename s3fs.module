@@ -27,6 +27,7 @@ class S3fsException extends Exception {}
  * Defines the s3:// stream wrapper.
  */
 function s3fs_stream_wrappers() {
+  libraries_load('awssdk3');
   return array(
     's3' => array(
       'name' => 'S3 File System',
