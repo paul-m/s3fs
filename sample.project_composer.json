@@ -1,0 +1,50 @@
+This is a fragment of a composer.json file you could use to deploy s3fs using
+only Composer, without composer_manager.
+
+{
+    "type": "project",
+    "require": {
+        "aws/aws-sdk-php": "3.147.10",
+        "composer/installers": "^1.7",
+        "cweagans/composer-patches": "^1.6",
+        "drupal/s3fs": "dev-7.x-3.x",
+        "oomphinc/composer-installers-extender": "^1.1"
+    },
+    "extra": {
+        "installer-paths": {
+            "sites/all/libraries/awssdk3": [
+                "aws/aws-sdk-php"
+            ],
+        },
+        "installer-types": [
+            "library"
+        ],
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/7"
+        },
+        "aws-aws-sdk-php": {
+            "type": "package",
+            "package": {
+                "name": "aws/aws-sdk-php",
+                "version": "3.147.10",
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/aws/aws-sdk-php/releases/download/3.147.10/aws.zip",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "files": [
+                        "aws-autoloader.php"
+                    ]
+                }
+            }
+        },
+        "s3fs": {
+            "type": "vcs",
+            "url": "https://github.com/paul-m/s3fs"
+        }
+    }
+}
