@@ -9,8 +9,10 @@ viable under such a configuration.
 =========================================
 == Dependencies and Other Requirements ==
 =========================================
+
 NOTE: This unofficial fork of s3fs does not use composer_manager. You must set up
 your project to manage the AWS SDK some other way, such as using libraries.
+
 - Composer Manager 1.x - https://drupal.org/project/composer_manager
 - AWS SDK for PHP 3.x - https://github.com/aws/aws-sdk-php/releases
 - PHP 5.5+ is required. The AWS SDK will not work on earlier versions.
