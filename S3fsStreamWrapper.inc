@@ -671,8 +671,11 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
   }
 
   public function dir_readdir() {
-    $entry = each($this->dir);
-    return $entry ? $entry['value'] : FALSE;
+    $current = current($this->dir);
+    if ($current) {
+      next($this->dir);
+    }
+    return $current;
   }
 
   public function rename($from_path, $to_path) {
