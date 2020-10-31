@@ -515,7 +515,7 @@ function _s3fs_convert_metadata($uri, $s3_metadata) {
       $metadata['timestamp'] = date('U', strtotime($s3_metadata['LastModified']));
     }
 
-    if (isset($s3_metadata['VersionId'])) {
+    if (isset($s3_metadata['VersionId']) && $s3_metadata['VersionId'] != 'null') {
       $metadata['version'] = $s3_metadata['VersionId'];
     }
   }
