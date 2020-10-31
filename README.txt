@@ -113,20 +113,25 @@ For s3fs to be able to function, the AWS user identified by the configured
 credentials should have the following User Policy set:
 
 {
-    "Effect": "Allow",
-    "Action": [
-        "s3:ListAllMyBuckets"
-    ],
-    "Resource": "arn:aws:s3:::*"
-},
-{
-    "Effect": "Allow",
-    "Action": [
-        "s3:*"
-    ],
-    "Resource": [
-        "arn:aws:s3:::<bucket_name>",
-        "arn:aws:s3:::<bucket_name>/*",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "arn:aws:s3:::*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<bucket_name>",
+                "arn:aws:s3:::<bucket_name>/*"
+            ]
+        }
     ]
 }
 
