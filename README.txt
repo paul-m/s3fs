@@ -215,7 +215,7 @@ examples of how to configure each setting:
 
 // All the s3fs config settings start with "s3fs_"
 $conf['s3fs_bucket'] = 'YOUR BUCKET NAME';
-$conf['s3fs_region'] = 'YOUR REGION'';
+$conf['s3fs_region'] = 'YOUR REGION';
 $conf['s3fs_use_cname'] = TRUE or FALSE;
 $conf['s3fs_domain'] = 'cdn.example.com';
 $conf['s3fs_domain_root'] = 'none', 'root', 'public', or 'root_public';
