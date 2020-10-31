@@ -216,7 +216,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     }
 
     $extension = '';
-    $file_parts = explode('.', basename($uri));
+    $file_parts = explode('.', drupal_basename($uri));
 
     // Remove the first part: a full filename should not match an extension.
     array_shift($file_parts);
@@ -334,7 +334,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // Forced Save As.
     foreach ($this->saveas as $blob) {
       if (preg_match("^$blob^", $s3_key)) {
-        $filename = basename($s3_key);
+        $filename = drupal_basename($s3_key);
         $url_settings['api_args']['ResponseContentDisposition'] = "attachment; filename=\"$filename\"";
         $url_settings['forced_saveas'] = TRUE;
         break;
@@ -671,7 +671,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     $this->dir = array();
     foreach ($child_paths as $child_path) {
-      $this->dir[] = basename($child_path);
+      $this->dir[] = drupal_basename($child_path);
     }
     return TRUE;
   }
