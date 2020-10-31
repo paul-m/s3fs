@@ -100,10 +100,8 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     // Check if bucket is configured.
     if (empty($this->config['bucket'])) {
-      $msg = t('Your AmazonS3 bucket name is not configured. Please visit the !settings_page.',
-        array('!settings_page' => l(t('configuration page'), '/admin/config/media/s3fs/settings')));
-      watchdog('S3 File System', $msg, array(), WATCHDOG_ERROR);
-      throw new Exception($msg);
+      watchdog('S3 File System', 'Your AmazonS3 bucket name is not configured. Please visit the <a href="@config_path">configuration page</a>.', array('@config_path' => '/admin/config/media/s3fs/settings'), WATCHDOG_ERROR);
+      throw new Exception('Your AmazonS3 bucket name is not configured. Please visit the configuration page at /admin/config/media/s3fs/settings');
     }
 
 
