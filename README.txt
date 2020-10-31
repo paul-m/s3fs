@@ -187,7 +187,7 @@ location ~* ^/(s3fs-css|s3fs-js)/(.*) {
   set $s3_base_path 'YOUR-BUCKET.s3.amazonaws.com/s3fs-public';
   set $file_path $2;
 
-  resolver         172.16.0.23 valid=300s;
+  resolver 8.8.4.4 8.8.8.8 valid=300s;
   resolver_timeout 10s;
 
   proxy_pass http://$s3_base_path/$file_path;
