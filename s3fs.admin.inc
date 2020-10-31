@@ -165,6 +165,17 @@ function s3fs_settings() {
         "(\"my-cloudfront-id.cloudfront.net\"). By default, the domain name maps to the entire bucket."
       ),
     ),
+    's3fs_domain_s3_private' => array(
+      '#type'          => 'checkbox',
+      '#title'         => t('Remove access to files via S3 URL'),
+      '#default_value' => _s3fs_get_setting('domain_s3_private'),
+      '#description'   => t("If using a domain name to serve files, there is usually no need to provide " .
+        "access to the URLs shown on S3 objects. This can also be a cost concern, since accessing files from S3 " .
+        "is more expensive than edge services such as Cloudfront. Select this checkbox to remove access to files " .
+        "using the S3 URL. Users attempting to reach the S3 URL will receive an \"Access Denied\" message. Note: " .
+        "This option has no impact on previously uploaded files."
+      ),
+    ),
   );
 
   $form['advanced']['s3fs_use_customhost'] = array(

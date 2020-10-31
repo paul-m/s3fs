@@ -536,7 +536,14 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     $options[$this->protocol]['ContentType'] = $this->getMimeType($this->uri);
 
-    if (file_uri_scheme($this->uri) != 'private') {
+    // All non-private files uploaded to S3 must be set to public-read, or
+    // users' browsers will get PermissionDenied errors, and torrent URLs won't
+    // work. The one exception to this is when all content is being routed
+    // through an edge service and access via S3 should be blocked.
+    if (!empty($this->config['use_cname']) && !empty($this->config['domain']) && !empty($this->config['domain_s3_private'])) {
+      $options[$this->protocol]['ALC'] = 'private';
+    }
+    elseif (file_uri_scheme($this->uri) != 'private') {
       // All non-private files uploaded to S3 must be set to public-read, or users' browsers
       // will get PermissionDenied errors, and torrent URLs won't work.
       $options[$this->protocol]['ACL'] = 'public-read';
