@@ -304,7 +304,11 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
       // public:// files are stored in S3 inside the s3fs_public_folder.
       $public_folder = !empty($this->config['public_folder']) ? $this->config['public_folder'] : 's3fs-public';
-      $s3_key = "{$public_folder}/$s3_key";
+      // If domain root is not set, or the value is set to map to the root
+      // folder, include the public folder.
+      if ($this->config['domain_root'] == 'none' || $this->config['domain_root'] == 'root') {
+        $s3_key = "{$public_folder}/$s3_key";
+      }
     }
 
     // Set up the URL settings as specified in our settings page.
@@ -339,8 +343,9 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // Allow other modules to change the URL settings.
     drupal_alter('s3fs_url_settings', $url_settings, $s3_key);
 
-    // If a root folder has been set, prepend it to the $s3_key at this time.
-    if (!empty($this->config['root_folder'])) {
+    // If a root folder has been set, and domain root is not set, prepend
+    // the root folder to the $s3_key at this time.
+    if (!empty($this->config['root_folder']) && ($this->config['domain_root'] == 'none')) {
       $s3_key = "{$this->config['root_folder']}/$s3_key";
     }
 

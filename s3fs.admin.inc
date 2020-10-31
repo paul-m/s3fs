@@ -143,6 +143,24 @@ function s3fs_settings() {
         "You will need to configure a DNS CNAME that maps from this domain to your bucket's URL."
       ),
     ),
+    's3fs_domain_root' => array(
+      '#type'          => 'select',
+      '#title'         => t('Map Domain Name to specific path'),
+      '#options'       => array(
+        'none' => t('Entire bucket (mybucket)'),
+        'root' => t('Root folder (mybucket/root)'),
+        'public' => t('Public folder (mybucket/s3fs-public)'),
+        'root_public' => t('Root & Public folders (mybucket/root/s3fs-public)'),
+      ),
+      '#default_value' => _s3fs_get_setting('domain_root'),
+      '#description'   => t("Map the domain name to the location from where the file should be pulled. " .
+        "This is useful when using a service such as Cloudfront where the origin path can be a specific " .
+        "folder in a bucket, rather than the entire bucket. For example, with a root folder of \"staging\" and " .
+        "a public folder of \"s3fs-public\" (for a full path of \"mybucket/staging/s3fs-public\"), the Root & " .
+        "Public folders option will allow the full path to be mapped directly to the domain name " .
+        "(\"my-cloudfront-id.cloudfront.net\"). By default, the domain name maps to the entire bucket."
+      ),
+    ),
   );
 
   $form['advanced']['s3fs_use_customhost'] = array(

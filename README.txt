@@ -218,6 +218,7 @@ $conf['s3fs_bucket'] = 'YOUR BUCKET NAME';
 $conf['s3fs_region'] = 'YOUR REGION'';
 $conf['s3fs_use_cname'] = TRUE or FALSE;
 $conf['s3fs_domain'] = 'cdn.example.com';
+$conf['s3fs_domain_root'] = 'none', 'root', 'public', or 'root_public';
 $conf['s3fs_use_customhost'] = TRUE or FALSE;
 $conf['s3fs_hostname'] = 'host.example.com';
 $conf['s3fs_cache_control_header'] = 'public, max-age=300';
