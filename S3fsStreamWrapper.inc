@@ -383,7 +383,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // If this file is versioned, append the version number as a GET arg to
     // ensure that browser caches will be bypassed upon version changes.
     $meta = $this->_read_cache($this->uri);
-    if (!empty($meta['version'])) {
+    if (!empty($meta['version']) && !empty($this->config['use_versioning'])) {
       $external_url = $this->_append_get_arg($external_url, $meta['version']);
     }
 
