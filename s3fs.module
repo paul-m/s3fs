@@ -314,9 +314,15 @@ function _s3fs_validate_config($config) {
 
   // Test the connection to S3, and the bucket name.
   try {
+    $list_obj_args = array('Bucket' => $config['bucket'], 'MaxKeys' => 1);
+    if (!empty($config['root_folder'])) {
+      // If the root_folder option has been set, retrieve from S3 only those files
+      // which reside in the root folder.
+      $list_obj_args['Prefix'] = "{$config['root_folder']}/";
+    }
     // listObjects() will trigger descriptive exceptions if the credentials,
     // bucket name, or region are invalid/mismatched.
-    $s3->listObjects(array('Bucket' => $config['bucket'], 'MaxKeys' => 1));
+    $s3->listObjects($list_obj_args);
   }
   catch (S3Exception $e) {
     form_set_error('form', t('An unexpected %exception occurred, with the following error message:<br>%error',
