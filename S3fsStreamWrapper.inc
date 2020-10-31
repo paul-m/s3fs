@@ -814,32 +814,11 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       $uri = preg_replace('^private://[/]+^', 'private://', $uri);
     }
 
-    // Cache DB reads so that faster caching mechanisms (e.g. redis, memcache)
-    // can further improve performance.
-    $cid = S3FS_CACHE_PREFIX . $uri;
-    if ($cached = cache_get($cid, S3FS_CACHE_BIN)) {
-      $record = $cached->data;
-    }
-    else {
-      // Cache miss. Avoid a stampede.
-      if (!lock_acquire($cid, 1)) {
-        // Another request is building the variable cache. Wait, then re-run
-        // this function.
-        lock_wait($cid);
-        $record = $this->_read_cache($uri);
-      }
-      else {
-        $record = db_select('s3fs_file', 's')
-          ->fields('s')
-          ->condition('uri', $uri, '=')
-          ->execute()
-          ->fetchAssoc();
-
-        cache_set($cid, $record, S3FS_CACHE_BIN, CACHE_TEMPORARY);
-        lock_release($cid);
-      }
-    }
-
+    $record = db_select('s3fs_file', 's')
+      ->fields('s')
+      ->condition('uri', $uri, '=')
+      ->execute()
+      ->fetchAssoc();
     return $record ? $record : FALSE;
   }
 
@@ -873,11 +852,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       ->fields($metadata)
       ->execute();
 
-    // Clear this URI from the Drupal cache, to ensure the next read isn't
-    // from a stale cache entry.
-    $cid = S3FS_CACHE_PREFIX . $metadata['uri'];
-    cache_clear_all($cid, S3FS_CACHE_BIN);
-
     $dirname = drupal_dirname($metadata['uri']);
     // If this file isn't in the root directory, also write this file's
     // ancestor folders to the cache.
@@ -909,9 +883,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     $or = db_or();
     foreach ($uri as $u) {
       $or->condition('uri', $u, '=');
-      // Clear this URI from the Drupal cache.
-      $cid = S3FS_CACHE_PREFIX . $u;
-      cache_clear_all($cid, S3FS_CACHE_BIN);
     }
     $delete_query->condition($or);
     return $delete_query->execute();
