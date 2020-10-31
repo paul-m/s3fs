@@ -156,6 +156,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       foreach (explode("\n", $this->config['presigned_urls']) as $line) {
         $blob = trim($line);
         if ($blob) {
+          $matches = array();
           if (preg_match('/(.*)\|(.*)/', $blob, $matches)) {
             $blob = $matches[2];
             $timeout = $matches[1];
