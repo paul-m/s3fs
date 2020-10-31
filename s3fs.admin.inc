@@ -21,16 +21,20 @@ function s3fs_settings() {
     'us-west-1' => t('US West - Northern California  (us-west-1)'),
     'us-west-2' => t('US West - Oregon (us-west-2)'),
     'us-gov-west-1' => t('USA GovCloud Standard (us-gov-west-1)'),
+    'ca-central-1' => t('Canada - Central (ca-central-1)'),
     'eu-west-1' => t('EU - Ireland  (eu-west-1)'),
     'eu-west-2' => t('EU - London (eu-west-2)'),
+    'eu-west-3' => t('EU - Paris (eu-west-3)'),
     'eu-central-1' => t('EU - Frankfurt (eu-central-1)'),
     'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
     'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
     'ap-northeast-1' => t('Asia Pacific - Tokyo (ap-northeast-1)'),
     'ap-northeast-2' => t('Asia Pacific - Seoul (ap-northeast-2)'),
+    'ap-northeast-3' => t('Asia Pacific - Osaka-Local (ap-northeast-3)'),
     'ap-south-1' => t('Asia Pacific - Mumbai (ap-south-1)'),
     'sa-east-1' => t('South America - Sao Paulo (sa-east-1)'),
     'cn-north-1' => t('China - Beijing (cn-north-1)'),
+    'cn-northwest-1' => t('China - Ningxia (cn-northwest-1)'),
   );
 
   /////////////////////////////////////
@@ -143,6 +147,35 @@ function s3fs_settings() {
         "You will need to configure a DNS CNAME that maps from this domain to your bucket's URL."
       ),
     ),
+    's3fs_domain_root' => array(
+      '#type'          => 'select',
+      '#title'         => t('Map Domain Name to specific path'),
+      '#options'       => array(
+        'none' => t('Entire bucket (mybucket)'),
+        'root' => t('Root folder (mybucket/root)'),
+        'public' => t('Public folder (mybucket/s3fs-public)'),
+        'root_public' => t('Root & Public folders (mybucket/root/s3fs-public)'),
+      ),
+      '#default_value' => _s3fs_get_setting('domain_root'),
+      '#description'   => t("Map the domain name to the location from where the file should be pulled. " .
+        "This is useful when using a service such as Cloudfront where the origin path can be a specific " .
+        "folder in a bucket, rather than the entire bucket. For example, with a root folder of \"staging\" and " .
+        "a public folder of \"s3fs-public\" (for a full path of \"mybucket/staging/s3fs-public\"), the Root & " .
+        "Public folders option will allow the full path to be mapped directly to the domain name " .
+        "(\"my-cloudfront-id.cloudfront.net\"). By default, the domain name maps to the entire bucket."
+      ),
+    ),
+    's3fs_domain_s3_private' => array(
+      '#type'          => 'checkbox',
+      '#title'         => t('Remove access to files via S3 URL'),
+      '#default_value' => _s3fs_get_setting('domain_s3_private'),
+      '#description'   => t("If using a domain name to serve files, there is usually no need to provide " .
+        "access to the URLs shown on S3 objects. This can also be a cost concern, since accessing files from S3 " .
+        "is more expensive than edge services such as Cloudfront. Select this checkbox to remove access to files " .
+        "using the S3 URL. Users attempting to reach the S3 URL will receive an \"Access Denied\" message. Note: " .
+        "This option has no impact on previously uploaded files."
+      ),
+    ),
   );
 
   $form['advanced']['s3fs_use_customhost'] = array(
@@ -251,8 +284,13 @@ function s3fs_settings() {
     '#title'         => t("Don't rewrite CSS/JS file paths"),
     '#default_value' => _s3fs_get_setting('no_rewrite_cssjs'),
     '#description'   => t(
-      'If this box is checked, s3fs will NOT rewrite the CSS/JS file paths to "/s3fs-(css|js)/...". Instead, they will
-      be placed on the page with their regular CDN name. Only enable this option if you <b>know</b> you need it!'
+      "Normally, S3FS renders the URLs of public:// CSS and JS files to make use of the proxy settings that are
+        assumed to be configured in your webserver based on the README. However, if you don't want it to do that, you
+        can check this box to make S3FS serve the regular S3 or CNAME URL for public:// CSS and JS files, instead.<br>
+        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!<br>
+        A tool is available in the <a href=\"/admin/config/media/s3fs/actions\">S3 File System Actions</a> to copy system
+        images to S3 when not rendering CSS/JS using proxied file paths. In many situations, this can help correct module,
+        theme, and library images that would otherwise be broken when using this setting. Use with caution."
     ),
     '#states'        => array(
       'visible' => array(
@@ -467,6 +505,30 @@ function s3fs_actions() {
     }
   }
 
+  $no_rewrite = !empty($config['no_rewrite_cssjs']);
+
+  if ($no_rewrite) {
+    $form['s3fs_copy_system'] = array(
+      '#type' => 'fieldset',
+      '#description' => t(
+        "Since you have S3 File System configured to not render proxied CSS/JS file paths, you
+        may want to copy system images to S3. These are images included with your site's modules, themes,
+        and libraries.<br>If you are using CSS aggregation either through Drupal's default settings or
+        a separate module such as AdvAgg, the aggregated files most likely will include <em>url</em>
+        definitions that point to your site's file system, not S3.<br>This feature will copy system images
+        to S3 with the correct directory structure. <strong>Please note, if new modules, themes, or
+        libraries are added to your site, this option will need to be run again to update S3.</strong>"
+      ),
+      '#title' => t('Copy System Images to S3'),
+    );
+    $form['s3fs_copy_system']['system'] = array(
+      '#type' => 'submit',
+      '#prefix' => '<br>',
+      '#value' => t('Copy system images to S3'),
+      '#submit' => array('_s3fs_copy_system_images_submit'),
+    );
+  }
+
   return $form;
 }
 
@@ -482,4 +544,11 @@ function _s3fs_refresh_cache_submit($form, &$form_state) {
  */
 function _s3fs_copy_local_submit($form, &$form_state) {
   _s3fs_copy_file_system_to_s3($form_state['triggering_element']['#name']);
+}
+
+/**
+ * Submit callback for the "Copy system images to S3" button.
+ */
+function _s3fs_copy_system_images_submit($form, &$form_state) {
+  $form_state['redirect'] = 'admin/config/media/s3fs/actions/copy-images';
 }

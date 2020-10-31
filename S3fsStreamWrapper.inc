@@ -100,10 +100,8 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     // Check if bucket is configured.
     if (empty($this->config['bucket'])) {
-      $msg = t('Your AmazonS3 bucket name is not configured. Please visit the !settings_page.',
-        array('!settings_page' => l(t('configuration page'), '/admin/config/media/s3fs/settings')));
-      watchdog('S3 File System', $msg, array(), WATCHDOG_ERROR);
-      throw new Exception($msg);
+      watchdog('S3 File System', 'Your AmazonS3 bucket name is not configured. Please visit the <a href="@config_path">configuration page</a>.', array('@config_path' => '/admin/config/media/s3fs/settings'), WATCHDOG_ERROR);
+      throw new Exception('Your AmazonS3 bucket name is not configured. Please visit the configuration page at /admin/config/media/s3fs/settings');
     }
 
 
@@ -158,6 +156,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       foreach (explode("\n", $this->config['presigned_urls']) as $line) {
         $blob = trim($line);
         if ($blob) {
+          $matches = array();
           if (preg_match('/(.*)\|(.*)/', $blob, $matches)) {
             $blob = $matches[2];
             $timeout = $matches[1];
@@ -217,7 +216,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     }
 
     $extension = '';
-    $file_parts = explode('.', basename($uri));
+    $file_parts = explode('.', drupal_basename($uri));
 
     // Remove the first part: a full filename should not match an extension.
     array_shift($file_parts);
@@ -306,7 +305,11 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
       // public:// files are stored in S3 inside the s3fs_public_folder.
       $public_folder = !empty($this->config['public_folder']) ? $this->config['public_folder'] : 's3fs-public';
-      $s3_key = "{$public_folder}/$s3_key";
+      // If domain root is not set, or the value is set to map to the root
+      // folder, include the public folder.
+      if ($this->config['domain_root'] == 'none' || $this->config['domain_root'] == 'root') {
+        $s3_key = "{$public_folder}/$s3_key";
+      }
     }
 
     // Set up the URL settings as specified in our settings page.
@@ -331,7 +334,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // Forced Save As.
     foreach ($this->saveas as $blob) {
       if (preg_match("^$blob^", $s3_key)) {
-        $filename = basename($s3_key);
+        $filename = drupal_basename($s3_key);
         $url_settings['api_args']['ResponseContentDisposition'] = "attachment; filename=\"$filename\"";
         $url_settings['forced_saveas'] = TRUE;
         break;
@@ -341,8 +344,9 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // Allow other modules to change the URL settings.
     drupal_alter('s3fs_url_settings', $url_settings, $s3_key);
 
-    // If a root folder has been set, prepend it to the $s3_key at this time.
-    if (!empty($this->config['root_folder'])) {
+    // If a root folder has been set, and domain root is not set, prepend
+    // the root folder to the $s3_key at this time.
+    if (!empty($this->config['root_folder']) && ($this->config['domain_root'] == 'none')) {
       $s3_key = "{$this->config['root_folder']}/$s3_key";
     }
 
@@ -385,7 +389,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // If this file is versioned, append the version number as a GET arg to
     // ensure that browser caches will be bypassed upon version changes.
     $meta = $this->_read_cache($this->uri);
-    if (!empty($meta['version'])) {
+    if (!empty($meta['version']) && !empty($this->config['use_versioning'])) {
       $external_url = $this->_append_get_arg($external_url, $meta['version']);
     }
 
@@ -532,7 +536,14 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     $options[$this->protocol]['ContentType'] = $this->getMimeType($this->uri);
 
-    if (file_uri_scheme($this->uri) != 'private') {
+    // All non-private files uploaded to S3 must be set to public-read, or
+    // users' browsers will get PermissionDenied errors, and torrent URLs won't
+    // work. The one exception to this is when all content is being routed
+    // through an edge service and access via S3 should be blocked.
+    if (!empty($this->config['use_cname']) && !empty($this->config['domain']) && !empty($this->config['domain_s3_private'])) {
+      $options[$this->protocol]['ALC'] = 'private';
+    }
+    elseif (file_uri_scheme($this->uri) != 'private') {
       // All non-private files uploaded to S3 must be set to public-read, or users' browsers
       // will get PermissionDenied errors, and torrent URLs won't work.
       $options[$this->protocol]['ACL'] = 'public-read';
@@ -620,15 +631,13 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     $bare_path = rtrim($uri, '/');
     $slash_path = $bare_path . '/';
 
-    // Check if the folder is empty.
-    $files = db_select('s3fs_file', 's')
+    // If the folder is empty, it's eligible for deletion.
+    $file_count = db_select('s3fs_file', 's')
       ->fields('s')
       ->condition('uri', db_like($slash_path) . '%', 'LIKE')
       ->execute()
-      ->fetchAll(PDO::FETCH_ASSOC);
-
-    // If the folder is empty, it's eligible for deletion.
-    if (empty($files)) {
+      ->rowCount();
+    if ($file_count === 0) {
       if (parent::rmdir($this->convertUriToKeyedPath($uri), $options)) {
         $this->_delete_cache($uri);
         clearstatcache(TRUE, $uri);
@@ -667,14 +676,17 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     $this->dir = array();
     foreach ($child_paths as $child_path) {
-      $this->dir[] = basename($child_path);
+      $this->dir[] = drupal_basename($child_path);
     }
     return TRUE;
   }
 
   public function dir_readdir() {
-    $entry = each($this->dir);
-    return $entry ? $entry['value'] : FALSE;
+    $current = current($this->dir);
+    if ($current) {
+      next($this->dir);
+    }
+    return $current;
   }
 
   public function rename($from_path, $to_path) {
@@ -814,32 +826,11 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       $uri = preg_replace('^private://[/]+^', 'private://', $uri);
     }
 
-    // Cache DB reads so that faster caching mechanisms (e.g. redis, memcache)
-    // can further improve performance.
-    $cid = S3FS_CACHE_PREFIX . $uri;
-    if ($cached = cache_get($cid, S3FS_CACHE_BIN)) {
-      $record = $cached->data;
-    }
-    else {
-      // Cache miss. Avoid a stampede.
-      if (!lock_acquire($cid, 1)) {
-        // Another request is building the variable cache. Wait, then re-run
-        // this function.
-        lock_wait($cid);
-        $record = $this->_read_cache($uri);
-      }
-      else {
-        $record = db_select('s3fs_file', 's')
-          ->fields('s')
-          ->condition('uri', $uri, '=')
-          ->execute()
-          ->fetchAssoc();
-
-        cache_set($cid, $record, S3FS_CACHE_BIN, CACHE_TEMPORARY);
-        lock_release($cid);
-      }
-    }
-
+    $record = db_select('s3fs_file', 's')
+      ->fields('s')
+      ->condition('uri', $uri, '=')
+      ->execute()
+      ->fetchAssoc();
     return $record ? $record : FALSE;
   }
 
@@ -873,11 +864,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       ->fields($metadata)
       ->execute();
 
-    // Clear this URI from the Drupal cache, to ensure the next read isn't
-    // from a stale cache entry.
-    $cid = S3FS_CACHE_PREFIX . $metadata['uri'];
-    cache_clear_all($cid, S3FS_CACHE_BIN);
-
     $dirname = drupal_dirname($metadata['uri']);
     // If this file isn't in the root directory, also write this file's
     // ancestor folders to the cache.
@@ -909,9 +895,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     $or = db_or();
     foreach ($uri as $u) {
       $or->condition('uri', $u, '=');
-      // Clear this URI from the Drupal cache.
-      $cid = S3FS_CACHE_PREFIX . $u;
-      cache_clear_all($cid, S3FS_CACHE_BIN);
     }
     $delete_query->condition($or);
     return $delete_query->execute();

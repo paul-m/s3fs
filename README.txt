@@ -191,7 +191,7 @@ location ~* ^/(s3fs-css|s3fs-js)/(.*) {
   set $s3_base_path 'YOUR-BUCKET.s3.amazonaws.com/s3fs-public';
   set $file_path $2;
 
-  resolver         172.16.0.23 valid=300s;
+  resolver 8.8.4.4 8.8.8.8 valid=300s;
   resolver_timeout 10s;
 
   proxy_pass http://$s3_base_path/$file_path;
@@ -222,6 +222,8 @@ $conf['s3fs_bucket'] = 'YOUR BUCKET NAME';
 $conf['s3fs_region'] = 'YOUR REGION'';
 $conf['s3fs_use_cname'] = TRUE or FALSE;
 $conf['s3fs_domain'] = 'cdn.example.com';
+$conf['s3fs_domain_root'] = 'none', 'root', 'public', or 'root_public';
+$conf['s3fs_domain_s3_private'] = TRUE or FALSE;
 $conf['s3fs_use_customhost'] = TRUE or FALSE;
 $conf['s3fs_hostname'] = 'host.example.com';
 $conf['s3fs_cache_control_header'] = 'public, max-age=300';
