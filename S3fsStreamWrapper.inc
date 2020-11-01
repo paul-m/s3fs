@@ -291,13 +291,19 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     // gets requested.
     $uri_parts = explode('/', $s3_key);
     if ($uri_parts[0] == 'styles' && substr($s3_key, -4) != '.css') {
-      if (!$this->_s3fs_get_object($this->uri)) {
+      $metadata = $this->_s3fs_get_object($this->uri);
+      $is_zero_byte = !isset($metadata['filesize']) || $metadata['filesize'] == 0;
+      if (!$metadata || $is_zero_byte) {
+        if ($is_zero_byte) {
+          $this->unlink($this->uri);
+        }
         // The style delivery path looks like: s3/files/styles/thumbnail/...
         // And $uri_parts looks like array('styles', 'thumbnail', ...),
         // so just prepend s3/files/.
         array_unshift($uri_parts, 's3', 'files');
         return url(implode('/', $uri_parts), array('absolute' => TRUE));
       }
+      unset($metadata);
     }
 
     // Deal with public:// files.
