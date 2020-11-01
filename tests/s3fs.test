@@ -2,10 +2,14 @@
 
 // Only define the S3fsTests class if the SimpleTest Clone module is installed.
 if (!module_exists('simpletest_clone')) {
-  $link = l(t('SimpleTest Clone'), 'https://drupal.org/project/simpletest_clone');
-  $msg = "S3 File System's tests require the !simpletest_clone module. You will not see this message again until you clear the cache.";
-  drupal_set_message(t($msg, array('!link' => $link)), 'warning');
-  watchdog('S3 File System', $msg, array('!simpletest_clone' => $link), WATCHDOG_WARNING);
+  $t = get_t();
+  $link = 'https://www.drupal.org/project/simpletest_clone';
+  drupal_set_message($t('S3 File System tests require the <a href="!link">SimpleTest Clone</a> module. You will not see this message again until you clear the cache.', array(
+    '!link' => $link,
+  )), 'warning');
+  watchdog('s3fs', 'S3 File System tests require the SimpleTest Clone module. You will not see this message again until you clear the cache.', array(), WATCHDOG_WARNING, l("SimpleTest Clone", $link, array(
+    'absolute' => TRUE,
+  )));
 }
 else {
   module_load_include('php', 'simpletest_clone', 'simpletest_clone_test_case');

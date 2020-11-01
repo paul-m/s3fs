@@ -287,18 +287,15 @@ function s3fs_settings() {
 
   $form['advanced']['s3fs_no_rewrite_cssjs'] = array(
     '#type'          => 'checkbox',
-    '#title'         => t("Don't rewrite CSS/JS file paths"),
+    '#title'         => t("Don't render proxied CSS/JS file paths"),
     '#default_value' => _s3fs_get_setting('no_rewrite_cssjs'),
     '#description'   => t(
       "Normally, S3FS renders the URLs of public:// CSS and JS files to make use of the proxy settings that are
         assumed to be configured in your webserver based on the README. However, if you don't want it to do that, you
         can check this box to make S3FS serve the regular S3 or CNAME URL for public:// CSS and JS files, instead.<br>
-        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!<br>
-        A tool is available in the <a href=\"/admin/config/media/s3fs/actions\">S3 File System Actions</a> to copy system
-        images to S3 when not rendering CSS/JS using proxied file paths. In many situations, this can help correct module,
-        theme, and library images that would otherwise be broken when using this setting. Use with caution."
+        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!"
     ),
-    '#states'        => array(
+    '#states' => array(
       'visible' => array(
         ':input[id=edit-s3fs-use-s3-for-public]' => array('checked' => TRUE),
       ),

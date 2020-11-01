@@ -135,7 +135,6 @@ function s3fs_schema() {
     ),
     'primary key' => array('uri'),
   );
-
   return $schema;
 }
 
