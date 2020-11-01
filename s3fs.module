@@ -406,13 +406,13 @@ function _s3fs_refresh_cache($config) {
       // Figure out the scheme based on the key's folder prefix.
       $public_folder_name = !empty($config['public_folder']) ? $config['public_folder'] : 's3fs-public';
       $private_folder_name = !empty($config['private_folder']) ? $config['private_folder'] : 's3fs-private';
-      if (strpos($key, "$public_folder_name/") === 0) {
+      if ($config['use_s3_for_public'] && strpos($key, "$public_folder_name/") === 0) {
         // Much like the root folder, the public folder name must be removed from URIs.
         $key = str_replace("$public_folder_name/", '', $key);
         $uri = "public://$key";
       }
       else {
-        if (strpos($key, "$private_folder_name/") === 0) {
+        if ($config['use_s3_for_public'] && strpos($key, "$private_folder_name/") === 0) {
           $key = str_replace("$private_folder_name/", '', $key);
           $uri = "private://$key";
         }
