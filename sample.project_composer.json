@@ -21,10 +21,6 @@ only Composer, without composer_manager.
         ],
     },
     "repositories": {
-        "drupal": {
-            "type": "composer",
-            "url": "https://packages.drupal.org/7"
-        },
         "aws-aws-sdk-php": {
             "type": "package",
             "package": {
@@ -45,6 +41,10 @@ only Composer, without composer_manager.
         "s3fs": {
             "type": "vcs",
             "url": "https://github.com/paul-m/s3fs"
+        },
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/7"
         }
     }
 }
