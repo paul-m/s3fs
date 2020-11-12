@@ -58,8 +58,9 @@ function hook_s3fs_url_settings_alter(&$url_settings, $s3_file_path) {
  * @param array $upload_params
  *   Associative array of upload settings
  * @see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-s3-2006-03-01.html#putobject
-*/
+ */
 function hook_s3fs_upload_params_alter(&$upload_params) {
+  // An example of what you might want to do with this hook.
   if (strpos($upload_params['Key'], 'private/') !== FALSE) {
     $upload_params['ACL'] = 'private';
   }

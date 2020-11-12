@@ -17,7 +17,7 @@ else {
   // configured in settings.php, which apparently doesn't get executed during a
   // DrupalWebTestcase.
   class S3fsTests extends SimpleTestCloneTestcase {
-    
+
     /**
      * State variables.
      */
@@ -25,7 +25,7 @@ else {
     protected $remote_tests_folder = '_s3fs_tests';
     protected $remote_tests_folder_key = '_s3fs_tests';
     protected $remote_tests_folder_uri = 's3://_s3fs_tests';
-    
+
     public static function getInfo() {
       return array(
         'name' => 'S3 File System Tests',
@@ -33,7 +33,7 @@ else {
         'group' => 'S3 File System',
       );
     }
-    
+
     function setUp() {
       parent::setUp('s3fs');
       // Empty out the bucket before the test, to prevent unexpected errors.
@@ -52,7 +52,7 @@ else {
         debug("Deleted file(s) from S3 test folder to prepare for the test.");
       }
     }
-    
+
     /**
      * Coverage test for the stream wrapper.
      */
@@ -152,7 +152,7 @@ else {
           Either edit the protected properties of the S3fsTests class, or create a bucket called 's3fs-testing-bucket' in the 'us-east-1' region.");
         return;
       }
-      
+
       // Add several files to the bucket using the AWS SDK directly, so that
       // s3fs won't cache them.
       $filenames = array('files/test2.txt', 'parts/test3.txt', 'test.txt', );
@@ -166,12 +166,12 @@ else {
           )
         );
       }
-      
+
       $config = _s3fs_get_config();
       // Set the current test folder as the root prefix.
       $config['root_folder'] = $this->remote_tests_folder_key;
       _s3fs_refresh_cache($config);
-      
+
       // Query the DB to confirm that all the new files are cached.
       $result = db_select('s3fs_file', 's')
         ->fields('s')
@@ -182,13 +182,13 @@ else {
         $cached_files[] = str_replace('s3://', '', $record->uri);
       }
       $this->assertEqual($filenames, $cached_files, 'The test files were all cached.');
-      
+
       // Flush the cache, then do a refresh using the root_folder setting.
       // Only the file in the root folder (test3.txt) should become cached.
       $delete_query = db_delete('s3fs_file')->execute();
       $config['root_folder'] = $this->remote_tests_folder_key . '/parts';
       _s3fs_refresh_cache($config);
-      
+
       // Confirm that only the file in the "parts" folder was cached.
       $records = db_select('s3fs_file', 's')
         ->fields('s')

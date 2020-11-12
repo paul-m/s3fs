@@ -22,46 +22,102 @@ use Aws\S3\S3ClientInterface;
  */
 class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInterface {
 
-  /** @var resource|null Stream context (this is set by PHP) */
+  /**
+   * Stream context (this is set by PHP when a context is used).
+   *
+   * @var resource
+   */
   public $context;
 
-  /** @var array Hash of opened stream parameters */
-  private $params = [];
+  /**
+   * Hash of opened stream parameters.
+   *
+   * @var array
+   */
+  private $params = array();
 
-  /** @var array Module configuration for stream */
-  private $config = [];
+  /**
+   * Module configuration for stream.
+   *
+   * @var array
+   */
+  private $config = array();
 
-  /** @var string Mode in which the stream was opened */
+  /**
+   * Mode in which the stream was opened.
+   *
+   * @var string
+   */
   private $mode;
 
-  /** @var string Instance uri referenced as "<scheme>://key" */
+  /**
+   * Instance URI referenced as "<scheme>://key".
+   *
+   * @var string
+   */
   protected $uri = NULL;
 
-  /** @var Aws\S3\S3Client The AWS SDK for PHP S3Client object */
+  /**
+   * The AWS SDK for PHP S3Client object.
+   *
+   * @var Aws\S3\S3Client
+   */
   protected $s3 = NULL;
 
-  /** @var string The opened protocol (e.g., "s3") */
+  /**
+   * The opened protocol (e.g., "s3").
+   *
+   * @var string
+   */
   private $protocol = 's3';
 
-  /** @var string Domain we use to access files over http */
+  /**
+   * Domain we use to access files over http.
+   *
+   * @var string
+   */
   protected $domain = NULL;
 
-  /** @var array Directory listing used by the dir_* methods */
+  /**
+   * Directory listing used by the dir_* methods.
+   *
+   * @var array
+   */
   protected $dir = NULL;
 
-  /** @var array Map for files that should be delivered with a torrent URL */
+  /**
+   * Map for files that should be delivered with a torrent URL.
+   *
+   * @var array
+   */
   protected $torrents = array();
 
-  /** @var array Files that the user has said must be downloaded, rather than viewed */
+  /**
+   * Files that the user has said must be downloaded, rather than viewed.
+   *
+   * @var array
+   */
   protected $saveas = array();
 
-  /** @var array Files which should be created with URLs that eventually time out */
+  /**
+   * Files which should be created with URLs that eventually time out.
+   *
+   * @var array
+   */
   protected $presignedURLs = array();
 
-  /** @var array Default map for determining file mime types */
+  /**
+   * Default map for determining file mime types.
+   *
+   * @var array
+   */
   protected static $mimeTypeMapping = NULL;
 
-  /** @var bool Indicates the current error state in the wrapper */
+  /**
+   * Indicates the current error state in the wrapper.
+   *
+   * @var bool
+   */
   protected $_error_state = FALSE;
 
 
@@ -106,8 +162,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       throw new Exception($msg);
     }
 
-
-
     // Always use HTTPS when the page is being served via HTTPS, to avoid
     // complaints from the browser about insecure content.
     global $is_https;
@@ -118,12 +172,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       $this->config['use_https'] = TRUE;
     }
 
-    if (!empty($this->config['use_https'])) {
-      $scheme = 'https';
-    }
-    else {
-      $scheme = 'http';
-    }
+    $scheme = (!empty($this->config['use_https'])) ? 'https' : 'http';
 
     // CNAME support for customizing S3 URLs.
     // If use_cname is not enabled, file URLs do not use $this->domain.
@@ -287,7 +336,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     // When generating an image derivative URL, e.g. styles/thumbnail/blah.jpg,
     // if the file doesn't exist, provide a URL to s3fs's special version of
-    // (), which will create the derivative when that URL
+    // image_style_deliver(), which will create the derivative when that URL
     // gets requested.
     $uri_parts = explode('/', $s3_key);
     if ($uri_parts[0] == 'styles' && substr($s3_key, -4) != '.css') {
@@ -399,7 +448,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       else {
         $external_url = $this->s3->getObjectUrl($this->config['bucket'], $s3_key);
       }
-
     }
     else {
       // We are using a CNAME, so we need to manually construct the URL.
@@ -412,7 +460,6 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     if (!empty($meta['version']) && !empty($this->config['use_versioning'])) {
       $external_url = $this->_append_get_arg($external_url, $meta['version']);
     }
-
     // Torrents can only be created for publicly-accessible files:
     // https://forums.aws.amazon.com/thread.jspa?threadID=140949
     // So Forced SaveAs and Presigned URLs cannot be served as torrents.
@@ -591,6 +638,10 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
     return FALSE;
   }
 
+  public function stream_metadata($path, $option, $value) {
+    return FALSE;
+  }
+
   /**
    * Support for fflush(). Flush current cached stream data to a file in S3.
    *
@@ -605,12 +656,12 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
 
     $options[$this->protocol]['ContentType'] = $this->getMimeType($this->uri);
 
-    // All non-private files uploaded to S3 must be set to public-read, or
-    // users' browsers will get PermissionDenied errors, and torrent URLs won't
-    // work. The one exception to this is when all content is being routed
-    // through an edge service and access via S3 should be blocked.
+    // All non-private files uploaded to S3 must be set to public-read, or users' browsers
+    // will get PermissionDenied errors, and torrent URLs won't work. The one exception to
+    // this is when all content is being routed through an edge service and access via S3
+    // should be blocked.
     if (!empty($this->config['use_cname']) && !empty($this->config['domain']) && !empty($this->config['domain_s3_private'])) {
-      $options[$this->protocol]['ALC'] = 'private';
+      $options[$this->protocol]['ACL'] = 'private';
     }
     elseif (file_uri_scheme($this->uri) != 'private') {
       // All non-private files uploaded to S3 must be set to public-read, or users' browsers
@@ -626,8 +677,19 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
       $options[$this->protocol]['ServerSideEncryption'] = $this->config['encryption'];
     }
 
+    // Legacy support: set bucket and key values that were present with
+    // AWS SDK v2. Used by AdvAgg module with hook_s3fs_upload_params_alter().
+    $options[$this->protocol]['Bucket'] = $this->config['bucket'];
+    $convertedPath = $this->convertUriToKeyedPath($this->uri, FALSE);
+    $options[$this->protocol]['Key'] = file_uri_target($convertedPath);
+
     // Allow other modules to alter the upload params.
     drupal_alter('s3fs_upload_params', $options[$this->protocol]);
+
+    // Legacy support: unset bucket and key values. Retaining them will
+    // cause conflicts when saving AdvAgg's aggregated css/js files.
+    unset($options[$this->protocol]['Bucket']);
+    unset($options[$this->protocol]['Key']);
 
     stream_context_set_option($this->context, $options);
 
@@ -909,7 +971,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
    * @param string $uri
    *   The uri of the resource to check.
    *
-   * @return bool
+   * @return array|bool
    *   An array if the $uri exists, otherwise FALSE.
    */
   protected function _s3fs_get_object($uri) {
@@ -945,7 +1007,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
    * @param string $uri
    *   The uri of the resource to check.
    *
-   * @return array
+   * @return array|bool
    *   An array of metadata if the $uri is in the cache. Otherwise, FALSE.
    */
   protected function _read_cache($uri) {

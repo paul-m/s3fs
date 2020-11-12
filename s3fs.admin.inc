@@ -58,6 +58,9 @@ function s3fs_settings() {
     '#collapsed'   => _s3fs_get_setting('awssdk_access_key') || _s3fs_get_setting('use_instance_profile'),
   );
 
+  # NOTE: The awssdk settings can be a bit confusing. They start with "s3fs_"
+  # to ensure that they get pulled as part of _s3fs_get_config(), but they can
+  # be hard-coded as overrides in settings.php without the s3fs_ prefix.
   $form['aws_credentials']['s3fs_awssdk_access_key'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Amazon Web Services Access Key'),
@@ -221,6 +224,16 @@ function s3fs_settings() {
       This may be undersirable for sites which use a CDN, so this checkbox was added to make S3FS upload
       the derivative to the client, instead. Doing so is less performant, but it allows the CDN to cache
       the file itself, instead of caching the redirect.'
+    ),
+  );
+
+  $form['advanced']['s3fs_use_versioning'] = array(
+    '#type'             => 'checkbox',
+    '#title'            =>  t('Use Bucket Versioning'),
+    '#default_value'    => _s3fs_get_setting('use_versioning'),
+    '#description'      => t(
+        'If your Bucket has Versioning enabled and you would like to store the version metadata
+        in the s3fs_file table'
     ),
   );
 
