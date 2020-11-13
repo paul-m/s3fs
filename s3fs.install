@@ -1,11 +1,11 @@
 <?php
 
-use Aws\Sdk;
-
 /**
  * @file
  * Install, update and uninstall functions for the S3 File System module.
  */
+
+use Aws\Sdk;
 
 /**
  * Implements hook_requirements().
@@ -63,6 +63,25 @@ function s3fs_requirements($phase) {
       'description' => $t('The AWS SDK could not be loaded.'),
       'severity' => REQUIREMENT_ERROR,
     );
+  }
+
+  if (_s3fs_get_setting('use_instance_profile')) {
+    $credentials_file = _s3fs_get_setting('credentials_file');
+
+    $message  = array(
+      'title' => $t('AWS Custom Credentials File'),
+    );
+
+    if (empty($credentials_file) || !is_readable($credentials_file)) {
+      $message['value'] = $t('The credentials file is NOT configured correctly in S3FS. It must be set to an
+        existing folder on the server, and the webserver must have read permissions on that folder.');
+      $message['severity'] = REQUIREMENT_ERROR;
+    }
+    else {
+      $message['value'] = $t('The custom credentials file for S3FS is configured correctly.');
+      $message['severity'] = REQUIREMENT_INFO;
+    }
+    $requirements['s3fs_credentials_file_status'] = $message;
   }
 
   return $requirements;
@@ -135,6 +154,7 @@ function s3fs_schema() {
     ),
     'primary key' => array('uri'),
   );
+
   return $schema;
 }
 
@@ -306,6 +326,40 @@ function s3fs_update_7202() {
   db_change_field('s3fs_file', 'uri', 'uri', $schema['s3fs_file']['fields']['uri']);
 }
 
+/**
+ * Replace the s3fs_use_instance_profile variable with s3fs_awssdk2_use_instance_profile.
+ */
+function s3fs_update_7203() {
+  $old_var = variable_get('s3fs_use_instance_profile', '');
+  if ($old_var !== '') {
+    variable_del('s3fs_use_instance_profile');
+  }
+  variable_set('s3fs_awssdk2_use_instance_profile', $old_var);
+}
+
+/**
+ * Fix the bug in the previous update.
+ */
+function s3fs_update_7204() {
+  # s3fs_update_7204() previously set the s3fs_awssdk2_use_instance_profile variable to 'unset' if
+  # the previous version of the variable wasn't set. This is disastrous, as 'unset' equates to boolean true.
+  # The problem has been fixed in the hook, but for anyone who updated s3fs before this new hook was written
+  # will have gotten the wrong value stored into their s3fs_awssdk2_use_instance_profile variable.
+  $var = variable_get('s3fs_awssdk2_use_instance_profile');
+  if ($var == 'unset') {
+    variable_del('s3fs_awssdk2_use_instance_profile');
+  }
+}
+
+/**
+* Adds the option to enable/disable querying of Versioned files
+* during the _s3fs_reset_media_cache() Action
+*/
+function s3fs_update_7205() {
+  # Sets the boolean flag of use_versioning to the default value of TRUE
+  # This will ensure that Versioning is set to default on module installation and enabling
+  variable_set('s3fs_use_versioning', TRUE);
+}
 
 /**
  * Add s3fs_domain_root as a variable, which allows for mapping of a CDN to a specific
@@ -315,8 +369,29 @@ function s3fs_update_7206() {
   variable_set('s3fs_domain_root', 'none');
 }
 
+/**
+ * Update s3fs variable names to support AWS SDK v3.
+ */
+function s3fs_update_7207() {
+  $var_conversions = array(
+    'awssdk2_access_key' => 'awssdk_access_key',
+    'awssdk2_secret_key' => 'awssdk_secret_key',
+    's3fs_awssdk2_access_key' => 's3fs_awssdk_access_key',
+    's3fs_awssdk2_secret_key' => 's3fs_awssdk_secret_key',
+    'awssdk2_use_instance_profile' => 's3fs_use_instance_profile',
+    'awssdk2_default_cache_config' => 's3fs_credentials_file',
+  );
+  foreach ($var_conversions as $old_var => $new_var) {
+    $old_value = variable_get($old_var, 'unset');
+    if ($old_value != 'unset') {
+      variable_set($new_var, $old_value);
+      variable_del($old_var);
+    }
+  }
+}
+
 /******************************************************************************
- *                            INTERNAL FUNCTONS
+ *                            INTERNAL FUNCTIONS
  ******************************************************************************/
 function _s3fs_register_s3_as_public_schema() {
   $public_schema = variable_get('file_public_schema', array('public'));

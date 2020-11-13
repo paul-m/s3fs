@@ -15,9 +15,12 @@ your project to manage the AWS SDK some other way, such as using libraries.
 
 - Composer Manager 1.x - https://drupal.org/project/composer_manager
 - AWS SDK for PHP 3.x - https://github.com/aws/aws-sdk-php/releases
-- PHP 5.5+ is required. The AWS SDK will not work on earlier versions.
+- PHP 5.5+ is required. AWS SDK v3 will not work on earlier versions.
 - Your PHP must be configured with "allow_url_fopen = On" in your php.ini file.
   Otherwise, PHP will be unable to open files that are in your S3 bucket.
+- PHP must also have the SimpleXML extension enabled.
+- See this page for additional recommendations:
+  https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/getting-started_requirements.html
 
 ==================
 == Installation ==
@@ -117,20 +120,25 @@ For s3fs to be able to function, the AWS user identified by the configured
 credentials should have the following User Policy set:
 
 {
-    "Effect": "Allow",
-    "Action": [
-        "s3:ListAllMyBuckets"
-    ],
-    "Resource": "arn:aws:s3:::*"
-},
-{
-    "Effect": "Allow",
-    "Action": [
-        "s3:*"
-    ],
-    "Resource": [
-        "arn:aws:s3:::<bucket_name>",
-        "arn:aws:s3:::<bucket_name>/*",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "arn:aws:s3:::*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<bucket_name>",
+                "arn:aws:s3:::<bucket_name>/*"
+            ]
+        }
     ]
 }
 
@@ -144,7 +152,7 @@ services.
 If you want your site's aggregated CSS and JS files to be stored on S3, rather
 than the default of storing them on the webserver's local filesystem, you'll
 need to do two things:
-1) Enable the "Use S3 for public:// files" option in the s3fs coniguration,
+1) Enable the "Use S3 for public:// files" option in the s3fs configuration,
    because Drupal always* puts aggregated CSS/JS into the public:// filesystem.
 2) Because of the way browsers interpret relative URLs used in CSS files, and
    how they restrict requests made from external javascript files, you'll need
@@ -218,14 +226,17 @@ If you want to configure S3 File System entirely from settings.php, here are
 examples of how to configure each setting:
 
 // All the s3fs config settings start with "s3fs_"
+$conf['s3fs_use_instance_profile'] = TRUE or FALSE;
+$conf['s3fs_credentials_file'] = '/full/path/to/credentials.ini';
 $conf['s3fs_bucket'] = 'YOUR BUCKET NAME';
-$conf['s3fs_region'] = 'YOUR REGION'';
+$conf['s3fs_region'] = 'YOUR REGION';
 $conf['s3fs_use_cname'] = TRUE or FALSE;
 $conf['s3fs_domain'] = 'cdn.example.com';
 $conf['s3fs_domain_root'] = 'none', 'root', 'public', or 'root_public';
 $conf['s3fs_domain_s3_private'] = TRUE or FALSE;
 $conf['s3fs_use_customhost'] = TRUE or FALSE;
 $conf['s3fs_hostname'] = 'host.example.com';
+$conf['s3fs_use_versioning'] = TRUE OR FALSE;
 $conf['s3fs_cache_control_header'] = 'public, max-age=300';
 $conf['s3fs_encryption'] = 'aws:kms';
 $conf['s3fs_use_https'] = TRUE or FALSE;
@@ -239,8 +250,6 @@ $conf['s3fs_private_folder'] = 's3fs-private';
 $conf['s3fs_presigned_urls'] = "300|presigned-files/*\n60|other-presigned/*";
 $conf['s3fs_saveas'] = "videos/*\nfull-size-images/*";
 $conf['s3fs_torrents'] = "yarrr/*";
-$conf['s3fs_use_instance_profile'] = TRUE or FALSE;
-$conf['s3fs_credentials_file'] = '/full/path/to/credentials.ini';
 
 // AWS Credentials use a different prefix than the rest of s3fs's settings
 $conf['awssdk_access_key'] = 'YOUR ACCESS KEY';
@@ -275,16 +284,35 @@ previously put into your bucket into the Root Folder. And if there are other
 files in your bucket that you want s3fs to know about, move them into there,
 too. Then do a metadata refresh.
 
-===========================================
-== Upgrading from S3 File System 7.x-2.x ==
-===========================================
-Various configuration names were changed to better match the AWS SDK. Please
-update these values in your settings.php file:
+===================================================
+== Upgrading from AWS SDK Version 2 to Version 3 ==
+===================================================
+If you previously used AWS SDK Version 2 and are now upgrading to Version 3,
+there are a few important points to consider.
 
-- awssdk2_access_key -> awssdk_access_key
-- awssdk2_secret_key -> awssdk_secret_key
-- awssdk2_use_instance_profile -> s3fs_use_instance_profile
-- awssdk2_default_cache_config -> s3fs_credentials_file
+First, if using the Libraries module to manage the SDK, make sure the libraries
+subfolder name where AWS SDK stored is updated from "awssdk2" to "awssdk". Also,
+after the s3fs module is updated and the new SDK code has been downloaded, it
+is important to run a Drush database update (drush updatedb) to ensure database
+variable names are properly updated.
+
+If you have configuration settings in your settings.php file referencing
+old s3fs variable names, please make sure these are updated to their new
+names. Changes are as follows:
+  - awssdk2_access_key --> awssdk_access_key
+  - awssdk2_secret_key --> awssdk_access_key
+  - awssdk2_use_instance_profile --> s3fs_use_instance_profile
+  - awssdk2_default_cache_config --> s3fs_credentials_file
+
+Finally, if you previously used the Default Cache Location setting to
+define where the profile credentials should be cached, this has been
+changed. It is recommended to use AWS IAM users to provide secure access.
+
+If you would prefer a file-based approach, it is necessary to create a
+credentials.ini file to be stored on your server using the new
+"s3fs_credentials_file" variable. Possible options are discussed here:
+https://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html
+https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_configuration.html
 
 ==================
 == Known Issues ==

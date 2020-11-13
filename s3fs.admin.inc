@@ -12,29 +12,35 @@ use Aws\Api;
  */
 function s3fs_settings() {
   $form = array();
-  // NOTE: I'd like to be able to pull this information directly from the SDK, but
-  // I couldn't find a way to get the human-readable region names.
+  // @todo Read endpoints from (composer_manager_vendor_dir() . 'aws/aws-sdk-php/src/data/endpoints.json')
   $region_map = array(
     '' => t('Default'),
-    'us-east-1' => t('US East - Northern Virginia (us-east-1)'),
-    'us-east-2' => t('US East - Ohio (us-east-2)'),
-    'us-west-1' => t('US West - Northern California  (us-west-1)'),
-    'us-west-2' => t('US West - Oregon (us-west-2)'),
-    'us-gov-west-1' => t('USA GovCloud Standard (us-gov-west-1)'),
-    'ca-central-1' => t('Canada - Central (ca-central-1)'),
-    'eu-west-1' => t('EU - Ireland  (eu-west-1)'),
-    'eu-west-2' => t('EU - London (eu-west-2)'),
-    'eu-west-3' => t('EU - Paris (eu-west-3)'),
-    'eu-central-1' => t('EU - Frankfurt (eu-central-1)'),
-    'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
-    'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
+    'af-south-1' => t('Africa - Cape Town (af-south-1)'),
+    'ap-east-1' => t('Asia Pacific - Hong Kong (ap-east-1)'),
     'ap-northeast-1' => t('Asia Pacific - Tokyo (ap-northeast-1)'),
     'ap-northeast-2' => t('Asia Pacific - Seoul (ap-northeast-2)'),
-    'ap-northeast-3' => t('Asia Pacific - Osaka-Local (ap-northeast-3)'),
     'ap-south-1' => t('Asia Pacific - Mumbai (ap-south-1)'),
+    'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
+    'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
+    'ca-central-1' => t('Canada - Central (ca-central-1)'),
+    'eu-central-1' => t('Europe - Frankfurt (eu-central-1)'),
+    'eu-north-1' => t('Europe - Stockholm (eu-north-1)'),
+    'eu-south-1' => t('Europe - Milan (eu-south-1)'),
+    'eu-west-1' => t('Europe - Ireland (eu-west-1)'),
+    'eu-west-2' => t('Europe - London (eu-west-2)'),
+    'eu-west-3' => t('Europe - Paris (eu-west-3)'),
+    'me-south-1' => t('Middle East - Bahrain (me-south-1)'),
     'sa-east-1' => t('South America - Sao Paulo (sa-east-1)'),
+    'us-east-1' => t('US East - N. Virginia (us-east-1)'),
+    'us-east-2' => t('US East - Ohio (us-east-2)'),
+    'us-west-1' => t('US West - N. California (us-west-1)'),
+    'us-west-2' => t('US West - Oregon (us-west-2)'),
     'cn-north-1' => t('China - Beijing (cn-north-1)'),
     'cn-northwest-1' => t('China - Ningxia (cn-northwest-1)'),
+    'us-gov-east-1' => t('AWS GovCloud - US-East (us-gov-east-1)'),
+    'us-gov-west-1' => t('AWS GovCloud - US-West (us-gov-west-1)'),
+    'us-iso-east-1' => t('US ISO East - (us-iso-east-1)'),
+    'us-isob-east-1' => t('US ISOB East - Ohio (us-isob-east-1)'),
   );
 
   /////////////////////////////////////
@@ -52,6 +58,9 @@ function s3fs_settings() {
     '#collapsed'   => _s3fs_get_setting('awssdk_access_key') || _s3fs_get_setting('use_instance_profile'),
   );
 
+  # NOTE: The awssdk settings can be a bit confusing. They start with "s3fs_"
+  # to ensure that they get pulled as part of _s3fs_get_config(), but they can
+  # be hard-coded as overrides in settings.php without the s3fs_ prefix.
   $form['aws_credentials']['s3fs_awssdk_access_key'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Amazon Web Services Access Key'),
@@ -218,6 +227,16 @@ function s3fs_settings() {
     ),
   );
 
+  $form['advanced']['s3fs_use_versioning'] = array(
+    '#type'             => 'checkbox',
+    '#title'            =>  t('Use Bucket Versioning'),
+    '#default_value'    => _s3fs_get_setting('use_versioning'),
+    '#description'      => t(
+        'If your Bucket has Versioning enabled and you would like to store the version metadata
+        in the s3fs_file table'
+    ),
+  );
+
   $form['advanced']['s3fs_cache_control_header'] = array(
     '#type'          => 'textfield',
     '#title'         => t('S3 Object Cache-Control Header'),
@@ -281,18 +300,15 @@ function s3fs_settings() {
 
   $form['advanced']['s3fs_no_rewrite_cssjs'] = array(
     '#type'          => 'checkbox',
-    '#title'         => t("Don't rewrite CSS/JS file paths"),
+    '#title'         => t("Don't render proxied CSS/JS file paths"),
     '#default_value' => _s3fs_get_setting('no_rewrite_cssjs'),
     '#description'   => t(
       "Normally, S3FS renders the URLs of public:// CSS and JS files to make use of the proxy settings that are
         assumed to be configured in your webserver based on the README. However, if you don't want it to do that, you
         can check this box to make S3FS serve the regular S3 or CNAME URL for public:// CSS and JS files, instead.<br>
-        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!<br>
-        A tool is available in the <a href=\"/admin/config/media/s3fs/actions\">S3 File System Actions</a> to copy system
-        images to S3 when not rendering CSS/JS using proxied file paths. In many situations, this can help correct module,
-        theme, and library images that would otherwise be broken when using this setting. Use with caution."
+        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!"
     ),
-    '#states'        => array(
+    '#states' => array(
       'visible' => array(
         ':input[id=edit-s3fs-use-s3-for-public]' => array('checked' => TRUE),
       ),
