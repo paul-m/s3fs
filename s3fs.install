@@ -49,18 +49,58 @@ function s3fs_requirements($phase) {
     );
   }
 
-  if (class_exists('Aws\Sdk')) {
-    $requirements['s3fs_awssdk'] = array(
-      'title' => $t('AWS SDK for PHP'),
-      'value' => $t('AWS SDK is installed.'),
-      'severity' => REQUIREMENT_OK,
-    );
+  // Check if Composer Manager module exists.
+  if (module_exists('composer_manager')) {
+    if (class_exists('Aws\Sdk')) {
+      $requirements['s3fs_awssdk'] = array(
+        'title' => $t('AWS SDK for PHP'),
+        'value' => $t('AWS SDK is installed.'),
+        'severity' => REQUIREMENT_OK,
+      );
+    }
+    else {
+      $requirements['s3fs_awssdk'] = array(
+        'title' => $t('AWS SDK for PHP'),
+        'value' => $t('The S3 File System module requires the AWS SDK for PHP v3.x library.'),
+        'description' => $t('The AWS SDK could not be loaded.'),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
   }
+  // Check if Libraries module exists.
+  elseif (module_exists('libraries')) {
+    $library = libraries_detect('awssdk');
+    if ($library && !empty($library['installed']) && version_compare($library['version'], '3') >= 0) {
+      $requirements['s3fs_awssdk'] = array(
+        'title' => $t('AWS SDK for PHP'),
+        'value' => $t('Installed @ v@version.', array('@version' => $library['version'])),
+        'severity' => REQUIREMENT_OK,
+      );
+    }
+    else {
+      $requirements['s3fs_awssdk'] = array(
+        'title' => $t('AWS SDK for PHP'),
+        'value' => $t('The S3 File System module requires the AWS SDK for PHP v3.x library.'),
+        'description' => $t('The Libraries module reported the following error: !error_message<br>
+          Please check the installation instructions for S3 File System.',
+          array('!error_message' => filter_xss($library['error message']))
+        ),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  // If neither Composer Manager nor Libraries exist, display status error.
   else {
-    $requirements['s3fs_awssdk'] = array(
-      'title' => $t('AWS SDK for PHP'),
-      'value' => $t('The S3 File System module requires the AWS SDK for PHP v3.x library.'),
-      'description' => $t('The AWS SDK could not be loaded.'),
+    $requirements['s3fs_awssdk_manager'] = array(
+      'title' => $t('S3FS AWS SDK Management Tool'),
+      'value' => $t('Not installed.'),
+      'description' => $t('S3 File System requires either the Composer Manager or Libraries
+        module to manage the AWS SDK. Please install !composer_manager or !libraries.',
+        array(
+          '!composer_manager' => l('Composer Manager', 'http://www.drupal.org/project/composer_manager'),
+          '!libraries' => l('Libraries', 'http://www.drupal.org/project/libraries'),
+        )
+      ),
       'severity' => REQUIREMENT_ERROR,
     );
   }

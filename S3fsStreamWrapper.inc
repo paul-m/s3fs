@@ -9,6 +9,11 @@
  * stream wrapper, too.
  */
 
+// If using Libraries instead of Composer Manager, load the AWS SDK.
+if (!module_exists('composer_manager')) {
+  _s3fs_load_awssdk_library();
+}
+
 use Aws\CacheInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\StreamWrapper;

@@ -9,7 +9,12 @@ viable under such a configuration.
 =========================================
 == Dependencies and Other Requirements ==
 =========================================
-- Composer Manager 1.x - https://drupal.org/project/composer_manager
+- Either the Composer Manager or Libraries module is required to manage
+  the AWS SDK. Download and install one of these two options:
+  - Composer Manager 1.x - https://drupal.org/project/composer_manager
+  - Libraries API 2.x - https://drupal.org/project/libraries
+- Note: if both Composer Manager and Libraries are installed, the s3fs module
+  will use Composer Manager.
 - AWS SDK for PHP 3.x - https://github.com/aws/aws-sdk-php/releases
 - PHP 5.5+ is required. AWS SDK v3 will not work on earlier versions.
 - Your PHP must be configured with "allow_url_fopen = On" in your php.ini file.
@@ -21,10 +26,30 @@ viable under such a configuration.
 ==================
 == Installation ==
 ==================
-
+FOR COMPOSER MANAGER MODULE:
 1) Install composer manager and follow its instructions for installing the AWS
 SDK PHP library. The composer.json file included with this module will set the
 version to the latest 3.x.
+
+FOR LIBRARIES MODULE:
+1) Install Libraries version 2.x from http://drupal.org/project/libraries.
+
+2) Install the AWS SDK for PHP.
+  a) If you have drush, you can install the SDK with this command (executed
+     from the root folder of your Drupal codebase):
+     drush make --no-core sites/all/modules/s3fs/s3fs.make
+  b) If you don't have drush, download the latest Version 3 aws.zip file
+     from here:
+     https://github.com/aws/aws-sdk-php/releases/latest/download/aws.zip
+     Extract the zip file into your Drupal Libraries folder for AWS SDK
+     (sites/all/libraries/awssdk) such that the path to aws-autoloader.php
+     is: "sites/all/libraries/awssdk/aws-autoloader.php"
+
+IN CASE OF TROUBLE DETECTING THE AWS SDK LIBRARY:
+Ensure that the awssdk folder itself, and all the files within it, can be read
+by your webserver. Usually this means that the user "apache" (or "_www" on OSX)
+must have read permissions for the files, and read+execute permissions for all
+the folders in the path leading to the awssdk files.
 
 ====================
 == Initial Setup ==
