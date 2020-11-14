@@ -4,7 +4,10 @@ core = 7.x
 php = 5.5
 configure = admin/config/media/s3fs/settings
 
-dependencies[] = libraries
+; Either or dependencies don't exist.
+;dependencies[] = composer_manager
+; or
+;dependencies[] = libraries
 
 ; Includes
 files[] = S3fsStreamWrapper.inc

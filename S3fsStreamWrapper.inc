@@ -9,6 +9,11 @@
  * stream wrapper, too.
  */
 
+// If using Libraries instead of Composer Manager, load the AWS SDK.
+if (!module_exists('composer_manager')) {
+  _s3fs_load_awssdk_library();
+}
+
 use Aws\CacheInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\StreamWrapper;
@@ -244,7 +249,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
    *
    * @param \Aws\S3\S3ClientInterface $client
    * @param string $protocol
-   * @param \Aws\CacheInterface|NULL $cache
+   * @param \Aws\CacheInterface|null $cache
    */
   public static function register(S3ClientInterface $client, $protocol = 's3', CacheInterface $cache = null) {
     parent::register($client, $protocol, $cache);
@@ -513,7 +518,7 @@ class S3fsStreamWrapper extends StreamWrapper implements DrupalStreamWrapperInte
    */
   public function waitUntilFileExists($uri) {
     // Retry ten times, once every second.
-    $params = $this->getCommandParams($uri, FALSE);
+    $params = $this->getCommandParams($uri);
     $params['@waiter'] = array(
       'delay' => 1,
       'maxAttempts' => 10,
