@@ -293,6 +293,9 @@ function _s3fs_image_style_deliver() {
 /**
  * Checks all the configuration options to ensure that they're valid.
  *
+ * @param array $config
+ *   An s3fs configuration array.
+ *
  * @return bool
  *   TRUE if config is good to go, otherwise FALSE.
  */

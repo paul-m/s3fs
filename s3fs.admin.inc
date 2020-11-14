@@ -19,6 +19,7 @@ function s3fs_settings() {
     'ap-east-1' => t('Asia Pacific - Hong Kong (ap-east-1)'),
     'ap-northeast-1' => t('Asia Pacific - Tokyo (ap-northeast-1)'),
     'ap-northeast-2' => t('Asia Pacific - Seoul (ap-northeast-2)'),
+    'ap-northeast-3' => t('Asia Pacific - Osaka-Local (ap-northeast-3)'),
     'ap-south-1' => t('Asia Pacific - Mumbai (ap-south-1)'),
     'ap-southeast-1' => t('Asia Pacific - Singapore (ap-southeast-1)'),
     'ap-southeast-2' => t('Asia Pacific - Sydney (ap-southeast-2)'),
@@ -79,8 +80,8 @@ function s3fs_settings() {
     '#default_value' => _s3fs_get_setting('use_instance_profile'),
     '#description'   => t(
       'If your Drupal site is running on an Amazon EC2 server, you may use the Instance Profile Credentials
-     from that server rather than setting your AWS credentials directly.'
-     ),
+      from that server rather than setting your AWS credentials directly.'
+    ),
   );
 
   $form['aws_credentials']['s3fs_credentials_file'] = array(
@@ -306,7 +307,10 @@ function s3fs_settings() {
       "Normally, S3FS renders the URLs of public:// CSS and JS files to make use of the proxy settings that are
         assumed to be configured in your webserver based on the README. However, if you don't want it to do that, you
         can check this box to make S3FS serve the regular S3 or CNAME URL for public:// CSS and JS files, instead.<br>
-        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!"
+        Under most setups, this will break your CSS and JS. Only enable this option if you <b>know</b> you need it!<br>
+        A tool is available in the <a href=\"/admin/config/media/s3fs/actions\">S3 File System Actions</a> to copy system
+        images to S3 when not rendering CSS/JS using proxied file paths. In many situations, this can help correct module,
+        theme, and library images that would otherwise be broken when using this setting. Use with caution."
     ),
     '#states' => array(
       'visible' => array(
